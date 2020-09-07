@@ -1,8 +1,10 @@
-﻿<AuthorizeView>
-    <Authorized>        
-        <a href="logout">Log out</a>
-    </Authorized>
-    <NotAuthorized>
-        <a href="login?redirectUri=/">Log in</a>
-    </NotAuthorized>
-</AuthorizeView>
+﻿<li class="nav-item">
+    <AuthorizeView>
+        <Authorized>
+            <a class="nav-link" href="logout">Log out</a>
+        </Authorized>
+        <NotAuthorized>
+            <a class="nav-link" href="login?redirectUri=/">Log in</a>
+        </NotAuthorized>
+    </AuthorizeView>
+</li>

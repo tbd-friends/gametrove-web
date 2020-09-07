@@ -1,9 +1,78 @@
 ﻿@page "/"
+@using web.Services
+@using web.Services.Actions
+@using web.ViewModels
+@using Timer = System.Timers.Timer
 @attribute [Authorize]
 
-<h1>Hello, world!</h1>
+<div class="container">
 
-Welcome to your new app.
+</div>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
-Index.cshtml
+@if (Games != null)
+{
+    @foreach (var game in Games)
+    {
+        <h3>@game.Name</h3>
+        <h5>@game.Platform</h5>
+    }
+}
+
+@code
+{
+    [Inject]
+    private GametroveApiService ApiService { get; set; }
+
+    private string Term { get; set; }
+    private IEnumerable<GameViewModel> Games { get; set; }
+    private Timer _timer;
+
+    protected override void OnInitialized()
+    {
+
+    }
+
+    protected void InputChanged(string term)
+    {
+        Term = term;
+
+        if (_timer != null)
+        {
+            _timer.Enabled = false;
+            _timer.Elapsed -= ExecuteSearch;
+            _timer.Stop();
+            _timer = null;
+        }
+
+        _timer = new Timer { Interval = 1000, AutoReset = false };
+        _timer.Elapsed += ExecuteSearch;
+        _timer.Start();
+    }
+
+    private void ExecuteSearch(object sender, EventArgs args)
+    {
+        InvokeAsync(async () =>
+        {
+            await DoSearch();
+        });
+    }
+
+    protected async Task DoSearch()
+    {
+        _timer.Elapsed -= ExecuteSearch;
+        _timer.Enabled = false;
+        _timer.Stop();
+        _timer = null;
+
+        await InvokeAsync(async () =>
+        {
+            if (!string.IsNullOrEmpty(Term))
+            {
+                Games = await ApiService.ExecuteWithResultAsync<SearchGamesAction, IEnumerable<GameViewModel>>(
+                    new SearchGamesAction(Term)).ConfigureAwait(true);
+
+                StateHasChanged();
+            }
+        });
+    }
+}
