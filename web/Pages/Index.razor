@@ -6,18 +6,25 @@
 @attribute [Authorize]
 
 <div class="container">
-
+    <input type="text" placeholder="Search" @oninput="InputChanged" />
 </div>
 
-@if (Games != null)
-{
-    @foreach (var game in Games)
+<div class="card-deck">
+    @if (Games != null)
     {
-        <h3>@game.Name</h3>
-        <h5>@game.Platform</h5>
+        @foreach (var game in Games)
+        {
+            <div class="card" width="width: 4em;">
+                <div class="card-body">
+                    <h3>@game.Name</h3>
+                    <h4>@game.Platform</h4>
+                    <h5>@($"{game.CompleteInBoxPrice:C}")</h5>
+                    <h5>@($"{game.LoosePrice:C}")</h5>
+                </div>
+            </div>
+        }
     }
-}
-
+</div>
 @code
 {
     [Inject]
@@ -27,14 +34,9 @@
     private IEnumerable<GameViewModel> Games { get; set; }
     private Timer _timer;
 
-    protected override void OnInitialized()
+    protected void InputChanged(ChangeEventArgs args)
     {
-
-    }
-
-    protected void InputChanged(string term)
-    {
-        Term = term;
+        Term = (string)args.Value;
 
         if (_timer != null)
         {
@@ -70,9 +72,13 @@
             {
                 Games = await ApiService.ExecuteWithResultAsync<SearchGamesAction, IEnumerable<GameViewModel>>(
                     new SearchGamesAction(Term)).ConfigureAwait(true);
-
-                StateHasChanged();
             }
+            else
+            {
+                Games = null;
+            }
+
+            StateHasChanged();
         });
     }
 }
